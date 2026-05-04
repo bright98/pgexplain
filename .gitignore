@@ -1,0 +1,15 @@
+# Binaries
+pgexplain
+*.exe
+
+# Go build cache and test artifacts
+*.test
+*.out
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
