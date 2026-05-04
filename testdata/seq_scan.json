@@ -1,0 +1,28 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Seq Scan",
+      "Parallel Aware": false,
+      "Relation Name": "orders",
+      "Alias": "orders",
+      "Startup Cost": 0.00,
+      "Total Cost": 1849.00,
+      "Plan Rows": 15,
+      "Plan Width": 72,
+      "Actual Startup Time": 0.042,
+      "Actual Total Time": 18.721,
+      "Actual Rows": 12,
+      "Actual Loops": 1,
+      "Filter": "(customer_id = 42)",
+      "Rows Removed by Filter": 99988,
+      "Shared Hit Blocks": 549,
+      "Shared Read Blocks": 0,
+      "Shared Dirtied Blocks": 0,
+      "Shared Written Blocks": 0,
+      "Temp Read Blocks": 0,
+      "Temp Written Blocks": 0
+    },
+    "Planning Time": 0.123,
+    "Execution Time": 18.854
+  }
+]

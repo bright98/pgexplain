@@ -1,0 +1,29 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Index Scan",
+      "Parallel Aware": false,
+      "Scan Direction": "Forward",
+      "Index Name": "orders_customer_id_idx",
+      "Relation Name": "orders",
+      "Alias": "orders",
+      "Startup Cost": 0.42,
+      "Total Cost": 12.47,
+      "Plan Rows": 3,
+      "Plan Width": 72,
+      "Actual Startup Time": 0.031,
+      "Actual Total Time": 0.038,
+      "Actual Rows": 3,
+      "Actual Loops": 1,
+      "Index Cond": "(customer_id = 42)",
+      "Shared Hit Blocks": 4,
+      "Shared Read Blocks": 0,
+      "Shared Dirtied Blocks": 0,
+      "Shared Written Blocks": 0,
+      "Temp Read Blocks": 0,
+      "Temp Written Blocks": 0
+    },
+    "Planning Time": 0.201,
+    "Execution Time": 0.061
+  }
+]
