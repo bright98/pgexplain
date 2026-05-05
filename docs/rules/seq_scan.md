@@ -175,5 +175,5 @@ Suggestion: Add an index on "orders" to support the filter (customer_id = 42).
 
 ## Related rules
 
-- **RowEstimateMismatch** — if the planner estimated 15 rows but got 12,000, the planner's choice of Seq Scan may have been based on bad statistics. That rule surfaces the estimation error itself.
-- **MissingIndexOnlyScan** — if the table has an index and the plan shows an `Index Scan` (not `Index Only Scan`), you may be able to eliminate the heap fetch entirely with a covering index.
+- **[RowEstimateMismatch](row_estimate_mismatch.md)** — if the planner estimated 15 rows but got 12,000, the planner's choice of Seq Scan may have been based on bad statistics. That rule surfaces the estimation error itself.
+- **MissingIndexOnlyScan** *(coming soon)* — if the table has an index and the plan shows an `Index Scan` (not `Index Only Scan`), you may be able to eliminate the heap fetch entirely with a covering index.
