@@ -2,6 +2,7 @@ package rules_test
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/pgexplain/pgexplain/advisor"
 	"github.com/pgexplain/pgexplain/parser"
@@ -303,4 +304,96 @@ func ExampleHashJoinSpill() {
 	//   node ID:  3 (Hash)
 	//   batches:  4
 	//   peak mem: 4096kB
+}
+
+// ExampleNestedLoopLarge_indexScan shows a Nested Loop where the inner side is
+// an Index Scan executed 1000 times — once per outer row. Severity is Warn
+// because each probe is efficient, but 1000 probes may indicate a bad estimate.
+func ExampleNestedLoopLarge_indexScan() {
+	// nested_loop.json: orders (outer, 1000 rows) × order_items index scan (inner, 1000 loops)
+	explainJSON, err := os.ReadFile("../testdata/nested_loop.json")
+	if err != nil {
+		panic(err)
+	}
+
+	plan, err := parser.Parse(explainJSON)
+	if err != nil {
+		panic(err)
+	}
+
+	adv := advisor.New(rules.NestedLoopLarge())
+
+	for _, f := range adv.Analyze(plan) {
+		fmt.Printf("[%s] %s\n", f.Severity, f.Message)
+	}
+
+	// Output:
+	// [WARN] nested loop probed Index Scan on "order_items" 1000 times
+}
+
+// ExampleNestedLoopLarge_seqScan shows the Error case: the inner side is a Seq Scan,
+// meaning PostgreSQL reads the entire inner table for every outer row — O(outer × inner).
+func ExampleNestedLoopLarge_seqScan() {
+	explainJSON := []byte(`[{
+		"Plan": {
+			"Node Type": "Nested Loop",
+			"Parallel Aware": false,
+			"Startup Cost": 0.00,
+			"Total Cost": 25000.00,
+			"Plan Rows": 1500,
+			"Plan Width": 120,
+			"Actual Startup Time": 0.021,
+			"Actual Total Time": 892.341,
+			"Actual Rows": 1500,
+			"Actual Loops": 1,
+			"Plans": [
+				{
+					"Node Type": "Seq Scan",
+					"Parent Relationship": "Outer",
+					"Parallel Aware": false,
+					"Relation Name": "orders",
+					"Alias": "o",
+					"Startup Cost": 0.00,
+					"Total Cost": 250.00,
+					"Plan Rows": 1000,
+					"Plan Width": 72,
+					"Actual Startup Time": 0.009,
+					"Actual Total Time": 2.341,
+					"Actual Rows": 1000,
+					"Actual Loops": 1
+				},
+				{
+					"Node Type": "Seq Scan",
+					"Parent Relationship": "Inner",
+					"Parallel Aware": false,
+					"Relation Name": "order_items",
+					"Alias": "i",
+					"Startup Cost": 0.00,
+					"Total Cost": 48.00,
+					"Plan Rows": 3,
+					"Plan Width": 48,
+					"Actual Startup Time": 0.012,
+					"Actual Total Time": 1.782,
+					"Actual Rows": 3,
+					"Actual Loops": 1000
+				}
+			]
+		},
+		"Planning Time": 0.198,
+		"Execution Time": 894.123
+	}]`)
+
+	plan, err := parser.Parse(explainJSON)
+	if err != nil {
+		panic(err)
+	}
+
+	adv := advisor.New(rules.NestedLoopLarge())
+
+	for _, f := range adv.Analyze(plan) {
+		fmt.Printf("[%s] %s\n", f.Severity, f.Message)
+	}
+
+	// Output:
+	// [ERROR] nested loop performed full table scan on "order_items" 1000 times
 }

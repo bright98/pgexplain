@@ -185,4 +185,4 @@ Sometimes the spill is caused by an unnecessarily large inner side. Consider whe
 ## Related rules
 
 - **[RowEstimateMismatch](row_estimate_mismatch.md)** — if the planner underestimated the inner relation's row count, it may have allocated too few hash buckets and too little memory from the start, making a spill more likely. The two findings often appear together.
-- **NestedLoopLarge** *(coming soon)* — if the planner chose a Hash Join because it estimated a large inner set, but the estimate was wrong, a Nested Loop might have been a better choice. Or vice versa.
+- **[NestedLoopLarge](nested_loop_large.md)** — if the planner chose a Hash Join because it estimated a large inner set, but the estimate was wrong, a Nested Loop might have been a better choice. Or vice versa.
