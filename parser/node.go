@@ -58,6 +58,7 @@ type Node struct {
 	RelationName *string `json:"Relation Name"`
 	Alias        *string `json:"Alias"`
 	IndexName    *string `json:"Index Name"`
+	HeapFetches  *int64  `json:"Heap Fetches"` // Index Only Scan: rows that required a heap fetch; 0 means fully index-covered
 
 	// --- Filter and join conditions ---
 	Filter              *string `json:"Filter"`
