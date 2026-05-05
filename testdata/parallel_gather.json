@@ -1,0 +1,37 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Gather",
+      "Parallel Aware": false,
+      "Startup Cost": 1000.00,
+      "Total Cost": 11234.56,
+      "Plan Rows": 100000,
+      "Plan Width": 72,
+      "Actual Startup Time": 12.341,
+      "Actual Total Time": 892.234,
+      "Actual Rows": 100000,
+      "Actual Loops": 1,
+      "Workers Planned": 4,
+      "Workers Launched": 2,
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": true,
+          "Relation Name": "events",
+          "Alias": "events",
+          "Startup Cost": 0.00,
+          "Total Cost": 8681.00,
+          "Plan Rows": 25000,
+          "Plan Width": 72,
+          "Actual Startup Time": 0.015,
+          "Actual Total Time": 445.123,
+          "Actual Rows": 25000,
+          "Actual Loops": 3
+        }
+      ]
+    },
+    "Planning Time": 0.892,
+    "Execution Time": 894.123
+  }
+]

@@ -1,0 +1,39 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Sort",
+      "Parallel Aware": false,
+      "Startup Cost": 15420.44,
+      "Total Cost": 17920.44,
+      "Plan Rows": 100000,
+      "Plan Width": 72,
+      "Actual Startup Time": 892.341,
+      "Actual Total Time": 1203.892,
+      "Actual Rows": 100000,
+      "Actual Loops": 1,
+      "Sort Key": ["created_at DESC"],
+      "Sort Method": "external merge",
+      "Sort Space Used": 18432,
+      "Sort Space Type": "Disk",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Relation Name": "events",
+          "Alias": "events",
+          "Startup Cost": 0.00,
+          "Total Cost": 8681.00,
+          "Plan Rows": 100000,
+          "Plan Width": 72,
+          "Actual Startup Time": 0.012,
+          "Actual Total Time": 98.234,
+          "Actual Rows": 100000,
+          "Actual Loops": 1
+        }
+      ]
+    },
+    "Planning Time": 0.145,
+    "Execution Time": 1204.123
+  }
+]

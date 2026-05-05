@@ -307,8 +307,156 @@ func TestParse_NodeByID(t *testing.T) {
 	}
 }
 
+func TestParse_NestedLoop(t *testing.T) {
+	plan, err := Parse(mustReadFixture(t, "nested_loop.json"))
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+
+	root := plan.Node
+	if got, want := root.NodeType, NodeNestedLoop; got != want {
+		t.Errorf("root NodeType = %q, want %q", got, want)
+	}
+	if got := len(root.Plans); got != 2 {
+		t.Fatalf("root len(Plans) = %d, want 2", got)
+	}
+
+	outer := root.Plans[0]
+	if got, want := outer.NodeType, NodeSeqScan; got != want {
+		t.Errorf("outer NodeType = %q, want %q", got, want)
+	}
+	if got, want := outer.ParentRelationship, "Outer"; got != want {
+		t.Errorf("outer ParentRelationship = %q, want %q", got, want)
+	}
+	if outer.ActualRows == nil || *outer.ActualRows != 1000 {
+		t.Errorf("outer ActualRows = %v, want 1000", outer.ActualRows)
+	}
+	// Outer always executes once at the top level
+	if outer.ActualLoops == nil || *outer.ActualLoops != 1 {
+		t.Errorf("outer ActualLoops = %v, want 1", outer.ActualLoops)
+	}
+
+	inner := root.Plans[1]
+	if got, want := inner.NodeType, NodeIndexScan; got != want {
+		t.Errorf("inner NodeType = %q, want %q", got, want)
+	}
+	if got, want := inner.ParentRelationship, "Inner"; got != want {
+		t.Errorf("inner ParentRelationship = %q, want %q", got, want)
+	}
+	if inner.RelationName == nil || *inner.RelationName != "order_items" {
+		t.Errorf("inner RelationName = %v, want %q", inner.RelationName, "order_items")
+	}
+	// The critical field: inner executes once per outer row → 1000 loops
+	if inner.ActualLoops == nil || *inner.ActualLoops != 1000 {
+		t.Errorf("inner ActualLoops = %v, want 1000", inner.ActualLoops)
+	}
+	if inner.ActualRows == nil || *inner.ActualRows != 3 {
+		t.Errorf("inner ActualRows (per loop) = %v, want 3", inner.ActualRows)
+	}
+	if inner.IndexCond == nil || *inner.IndexCond != "(order_id = o.id)" {
+		t.Errorf("inner IndexCond = %v, want %q", inner.IndexCond, "(order_id = o.id)")
+	}
+}
+
+func TestParse_IndexOnlyScan(t *testing.T) {
+	plan, err := Parse(mustReadFixture(t, "index_only_scan.json"))
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+
+	root := plan.Node
+	if got, want := root.NodeType, NodeIndexOnlyScan; got != want {
+		t.Errorf("NodeType = %q, want %q", got, want)
+	}
+	if root.IndexName == nil || *root.IndexName != "orders_customer_id_created_at_idx" {
+		t.Errorf("IndexName = %v, want %q", root.IndexName, "orders_customer_id_created_at_idx")
+	}
+	if root.IndexCond == nil || *root.IndexCond != "(customer_id = 42)" {
+		t.Errorf("IndexCond = %v, want %q", root.IndexCond, "(customer_id = 42)")
+	}
+	// HeapFetches = 0: all rows served from the index, no heap access needed
+	if root.HeapFetches == nil {
+		t.Fatal("HeapFetches is nil, want 0")
+	}
+	if *root.HeapFetches != 0 {
+		t.Errorf("HeapFetches = %d, want 0", *root.HeapFetches)
+	}
+	// No filter: the index covers the predicate exactly
+	if root.Filter != nil {
+		t.Errorf("Filter = %v, want nil", root.Filter)
+	}
+	if root.SharedHitBlocks == nil || *root.SharedHitBlocks != 3 {
+		t.Errorf("SharedHitBlocks = %v, want 3", root.SharedHitBlocks)
+	}
+}
+
+func TestParse_SortSpill(t *testing.T) {
+	plan, err := Parse(mustReadFixture(t, "sort_spill.json"))
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+
+	root := plan.Node
+	if got, want := root.NodeType, NodeSort; got != want {
+		t.Errorf("NodeType = %q, want %q", got, want)
+	}
+	// "external merge" is the sort method PostgreSQL uses when spilling to disk
+	if root.SortMethod == nil || *root.SortMethod != "external merge" {
+		t.Errorf("SortMethod = %v, want %q", root.SortMethod, "external merge")
+	}
+	// "Disk" distinguishes a spill from an in-memory sort
+	if root.SortSpaceType == nil || *root.SortSpaceType != "Disk" {
+		t.Errorf("SortSpaceType = %v, want %q", root.SortSpaceType, "Disk")
+	}
+	if root.SortSpaceUsed == nil || *root.SortSpaceUsed != 18432 {
+		t.Errorf("SortSpaceUsed = %v, want 18432", root.SortSpaceUsed)
+	}
+	if root.SortKey == nil || len(root.SortKey) != 1 || root.SortKey[0] != "created_at DESC" {
+		t.Errorf("SortKey = %v, want [created_at DESC]", root.SortKey)
+	}
+	if got := len(root.Plans); got != 1 {
+		t.Fatalf("len(Plans) = %d, want 1", got)
+	}
+}
+
+func TestParse_ParallelGather(t *testing.T) {
+	plan, err := Parse(mustReadFixture(t, "parallel_gather.json"))
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+
+	root := plan.Node
+	if got, want := root.NodeType, NodeGather; got != want {
+		t.Errorf("NodeType = %q, want %q", got, want)
+	}
+	if root.WorkersPlanned == nil || *root.WorkersPlanned != 4 {
+		t.Errorf("WorkersPlanned = %v, want 4", root.WorkersPlanned)
+	}
+	// Workers Launched < Workers Planned: the signal for ParallelNotLaunched rule
+	if root.WorkersLaunched == nil || *root.WorkersLaunched != 2 {
+		t.Errorf("WorkersLaunched = %v, want 2", root.WorkersLaunched)
+	}
+	if got := len(root.Plans); got != 1 {
+		t.Fatalf("len(Plans) = %d, want 1", got)
+	}
+
+	child := root.Plans[0]
+	if got, want := child.NodeType, NodeSeqScan; got != want {
+		t.Errorf("child NodeType = %q, want %q", got, want)
+	}
+	// Parallel Aware = true: this node runs inside a parallel worker
+	if !child.ParallelAware {
+		t.Error("child ParallelAware = false, want true")
+	}
+	// ActualLoops = 3: leader process + 2 launched workers each executed this node
+	if child.ActualLoops == nil || *child.ActualLoops != 3 {
+		t.Errorf("child ActualLoops = %v, want 3", child.ActualLoops)
+	}
+}
+
 func TestParse_NodeID_RootIsAlwaysOne(t *testing.T) {
-	fixtures := []string{"seq_scan.json", "hash_join_sort.json", "index_scan.json"}
+	fixtures := []string{"seq_scan.json", "hash_join_sort.json", "index_scan.json",
+		"nested_loop.json", "index_only_scan.json", "sort_spill.json", "parallel_gather.json"}
 	for _, f := range fixtures {
 		plan, err := Parse(mustReadFixture(t, f))
 		if err != nil {
