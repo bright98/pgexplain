@@ -253,5 +253,5 @@ This also allows the planner to use index statistics for the expression.
 
 ## Related rules
 
-- **SeqScan** — if a bad row estimate caused the planner to choose a Seq Scan, the SeqScan rule will also fire, pointing at the high filter discard ratio. The two findings together paint the full picture: the planner chose the wrong access method because it underestimated row count.
+- **[SeqScan](seq_scan.md)** — if a bad row estimate caused the planner to choose a Seq Scan, the SeqScan rule will also fire, pointing at the high filter discard ratio. The two findings together paint the full picture: the planner chose the wrong access method because it underestimated row count.
 - **HashJoinSpill** *(coming soon)* — a row estimate underestimate on the inner side of a Hash Join often causes the hash table to spill to disk. RowEstimateMismatch tells you the estimate was wrong; HashJoinSpill tells you the consequence.
