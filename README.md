@@ -135,6 +135,7 @@ Pass it to `advisor.New()` alongside the built-in rules. Your rule will be calle
 |---|---|---|---|
 | SeqScan | `rules.SeqScan()` | Sequential scan that discards far more rows than it returns | [docs/rules/seq_scan.md](docs/rules/seq_scan.md) |
 | RowEstimateMismatch | `rules.RowEstimateMismatch()` | Planner row estimate diverges significantly from actual rows produced | [docs/rules/row_estimate_mismatch.md](docs/rules/row_estimate_mismatch.md) |
+| HashJoinSpill | `rules.HashJoinSpill()` | Hash join spilled to disk because the hash table exceeded work_mem | [docs/rules/hash_join_spill.md](docs/rules/hash_join_spill.md) |
 
 More rules are being added — see [Roadmap](#roadmap).
 
@@ -146,7 +147,7 @@ More rules are being added — see [Roadmap](#roadmap).
 |---|---|---|
 | 1 | `SeqScan` ✅ | What a sequential scan is and when it hurts |
 | 2 | `RowEstimateMismatch` ✅ | Cost model, planner statistics, Plan Rows vs Actual Rows |
-| 3 | `HashJoinSpill` | Join strategies, `work_mem`, temp block I/O |
+| 3 | `HashJoinSpill` ✅ | Join strategies, `work_mem`, temp block I/O |
 | 4 | `NestedLoopLarge` | When nested loops hurt, N+1 suspicion |
 | 5 | `MissingIndexOnlyScan` | Index Scan vs Index Only Scan, visibility map |
 | 6 | `SortSpill` | Sort strategies, top-N optimization |

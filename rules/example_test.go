@@ -223,3 +223,84 @@ func ExampleRowEstimateMismatch_withLoops() {
 	// Output:
 	// [WARN] row estimate for Index Scan was off by 500x (underestimate: planned 10, got 5000)
 }
+
+// ExampleHashJoinSpill demonstrates the HashJoinSpill rule on a plan where
+// the hash table for a join exceeded work_mem and spilled to disk across 4 batches.
+//
+// The Hash node (inner child of Hash Join) is where PostgreSQL builds the hash
+// table. Hash Batches > 1 means it could not fit in work_mem and batched to disk.
+func ExampleHashJoinSpill() {
+	explainJSON := []byte(`[{
+		"Plan": {
+			"Node Type": "Hash Join",
+			"Parallel Aware": false,
+			"Startup Cost": 31.50,
+			"Total Cost": 3025.10,
+			"Plan Rows": 1509,
+			"Plan Width": 104,
+			"Actual Startup Time": 2.451,
+			"Actual Total Time": 38.234,
+			"Actual Rows": 1842,
+			"Actual Loops": 1,
+			"Hash Cond": "(o.customer_id = c.id)",
+			"Plans": [
+				{
+					"Node Type": "Seq Scan",
+					"Parent Relationship": "Outer",
+					"Parallel Aware": false,
+					"Relation Name": "orders",
+					"Alias": "o",
+					"Startup Cost": 0.00,
+					"Total Cost": 2846.00,
+					"Plan Rows": 100000,
+					"Plan Width": 72,
+					"Actual Startup Time": 0.012,
+					"Actual Total Time": 22.100,
+					"Actual Rows": 100000,
+					"Actual Loops": 1
+				},
+				{
+					"Node Type": "Hash",
+					"Parent Relationship": "Inner",
+					"Parallel Aware": false,
+					"Startup Cost": 25.00,
+					"Total Cost": 25.00,
+					"Plan Rows": 520,
+					"Plan Width": 36,
+					"Actual Startup Time": 2.431,
+					"Actual Total Time": 2.431,
+					"Actual Rows": 523,
+					"Actual Loops": 1,
+					"Hash Buckets": 1024,
+					"Hash Batches": 4,
+					"Peak Memory Usage": 4096
+				}
+			]
+		},
+		"Planning Time": 0.892,
+		"Execution Time": 46.203
+	}]`)
+
+	plan, err := parser.Parse(explainJSON)
+	if err != nil {
+		panic(err)
+	}
+
+	adv := advisor.New(
+		rules.HashJoinSpill(),
+	)
+
+	for _, f := range adv.Analyze(plan) {
+		node, _ := plan.NodeByID(f.NodeID)
+		fmt.Printf("[%s] %s\n", f.Severity, f.Message)
+		fmt.Printf("  node ID:  %d (%s)\n", node.ID, node.NodeType)
+		fmt.Printf("  batches:  %d\n", *node.HashBatches)
+		fmt.Printf("  peak mem: %dkB\n", *node.PeakMemoryUsage)
+	}
+
+	// Output:
+	// [WARN] hash join spilled to disk across 4 batches (peak memory: 4096kB per batch)
+	//   node ID:  3 (Hash)
+	//   batches:  4
+	//   peak mem: 4096kB
+}
