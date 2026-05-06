@@ -29,6 +29,31 @@ var version = "dev"
 // It equals the width of the widest label prefix: "  suggestion: " = 14.
 const valueColumn = 14
 
+// ANSI color codes. Applied only when stdout is a TTY.
+const (
+	colorReset  = "\033[0m"
+	colorRed    = "\033[31m"
+	colorYellow = "\033[33m"
+	colorCyan   = "\033[36m"
+)
+
+// colorize wraps s in the given ANSI color code when stdout is a TTY.
+func colorize(color, s string) string {
+	if !stdoutIsTTY() {
+		return s
+	}
+	return color + s + colorReset
+}
+
+// stdoutIsTTY reports whether stdout is connected to an interactive terminal.
+func stdoutIsTTY() bool {
+	stat, err := os.Stdout.Stat()
+	if err != nil {
+		return false
+	}
+	return (stat.Mode() & os.ModeCharDevice) != 0
+}
+
 func main() {
 	format := flag.String("format", "text", `Output format: "text" (default) or "json"`)
 	showVersion := flag.Bool("version", false, "Print version and exit")
@@ -131,7 +156,9 @@ func printText(findings []advisor.Finding, plan *parser.Plan) {
 			fmt.Println()
 		}
 		node, _ := plan.NodeByID(f.NodeID)
-		fmt.Printf("%-8s%s\n", "["+severityLabel(f.Severity)+"]", f.Message)
+		label, width := severityLabel(f.Severity)
+		pad := strings.Repeat(" ", 8-width)
+		fmt.Printf("%s%s %s\n", label, pad, f.Message)
 		printField("node", fmt.Sprintf("%s (ID %d)", node.NodeType, node.ID))
 		printField("detail", f.Detail)
 		printField("suggestion", f.Suggestion)
@@ -153,17 +180,19 @@ func printField(label, value string) {
 	fmt.Printf("%s%s\n", prefix, indented)
 }
 
-// severityLabel returns the severity word used inside brackets in text output.
-func severityLabel(s advisor.Severity) string {
+// severityLabel returns the (possibly colored) bracketed severity tag and its
+// visible character width. The width is used for alignment since ANSI escape
+// codes inflate the string length without contributing to visible width.
+func severityLabel(s advisor.Severity) (label string, width int) {
 	switch s {
 	case advisor.Error:
-		return "ERROR"
+		return colorize(colorRed, "[ERROR]"), 7
 	case advisor.Warn:
-		return "WARN"
+		return colorize(colorYellow, "[WARN]"), 6
 	case advisor.Info:
-		return "INFO"
+		return colorize(colorCyan, "[INFO]"), 6
 	default:
-		return "UNKNOWN"
+		return "[UNKNOWN]", 9
 	}
 }
 
