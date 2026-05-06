@@ -397,3 +397,212 @@ func ExampleNestedLoopLarge_seqScan() {
 	// Output:
 	// [ERROR] nested loop performed full table scan on "order_items" 1000 times
 }
+
+// ExampleMissingIndexOnlyScan demonstrates the MissingIndexOnlyScan rule on a
+// plan where an Index Only Scan fetches 40% of rows from the heap.
+//
+// An Index Only Scan should serve all rows from the index without visiting the
+// main table (heap). When VACUUM has not updated the visibility map, PostgreSQL
+// must visit the heap to verify row visibility — defeating the purpose of the
+// scan. Heap Fetches counts these visits.
+func ExampleMissingIndexOnlyScan() {
+	explainJSON := []byte(`[{
+		"Plan": {
+			"Node Type": "Index Only Scan",
+			"Parallel Aware": false,
+			"Relation Name": "users",
+			"Alias": "u",
+			"Index Name": "users_email_idx",
+			"Startup Cost": 0.42,
+			"Total Cost": 312.44,
+			"Plan Rows": 500,
+			"Plan Width": 36,
+			"Actual Startup Time": 0.031,
+			"Actual Total Time": 4.812,
+			"Actual Rows": 500,
+			"Actual Loops": 1,
+			"Index Cond": "(email = 'x@example.com')",
+			"Heap Fetches": 200
+		},
+		"Planning Time": 0.089,
+		"Execution Time": 4.921
+	}]`)
+
+	plan, err := parser.Parse(explainJSON)
+	if err != nil {
+		panic(err)
+	}
+
+	adv := advisor.New(
+		rules.MissingIndexOnlyScan(), // default: warn when >= 10% of rows hit the heap
+	)
+
+	for _, f := range adv.Analyze(plan) {
+		fmt.Printf("[%s] %s\n", f.Severity, f.Message)
+		fmt.Printf("  detail:     %s\n", f.Detail)
+	}
+
+	// Output:
+	// [WARN] Index Only Scan on "users" (index: users_email_idx) fetched 40% of rows from the heap
+	//   detail:     An Index Only Scan should serve rows entirely from the index without touching the heap. This node returned 500 rows but fetched 200 from the heap (40%). Heap fetches happen when the visibility map does not mark the page as all-visible, forcing PostgreSQL to verify row visibility in "users". This typically means VACUUM has not run recently enough on the table.
+}
+
+// ExampleSortSpill demonstrates the SortSpill rule on a plan where a Sort node
+// exceeded work_mem and wrote temporary data to disk.
+//
+// PostgreSQL reports "Sort Method: external merge" and "Sort Space Type: Disk"
+// when this happens. The rule fires on the Sort node and suggests a work_mem
+// target calculated from the reported disk usage.
+func ExampleSortSpill() {
+	explainJSON := []byte(`[{
+		"Plan": {
+			"Node Type": "Sort",
+			"Parallel Aware": false,
+			"Startup Cost": 15420.44,
+			"Total Cost": 17920.44,
+			"Plan Rows": 100000,
+			"Plan Width": 72,
+			"Actual Startup Time": 892.341,
+			"Actual Total Time": 1203.892,
+			"Actual Rows": 100000,
+			"Actual Loops": 1,
+			"Sort Key": ["created_at DESC"],
+			"Sort Method": "external merge",
+			"Sort Space Used": 18432,
+			"Sort Space Type": "Disk",
+			"Plans": [{
+				"Node Type": "Seq Scan",
+				"Parent Relationship": "Outer",
+				"Parallel Aware": false,
+				"Relation Name": "events",
+				"Alias": "events",
+				"Startup Cost": 0.00,
+				"Total Cost": 8681.00,
+				"Plan Rows": 100000,
+				"Plan Width": 72,
+				"Actual Startup Time": 0.012,
+				"Actual Total Time": 98.234,
+				"Actual Rows": 100000,
+				"Actual Loops": 1
+			}]
+		},
+		"Planning Time": 0.145,
+		"Execution Time": 1204.123
+	}]`)
+
+	plan, err := parser.Parse(explainJSON)
+	if err != nil {
+		panic(err)
+	}
+
+	adv := advisor.New(
+		rules.SortSpill(),
+	)
+
+	for _, f := range adv.Analyze(plan) {
+		fmt.Printf("[%s] %s\n", f.Severity, f.Message)
+		fmt.Printf("  detail:     %s\n", f.Detail)
+	}
+
+	// Output:
+	// [WARN] sort spilled to disk using external merge (18432 kB)
+	//   detail:     The sort could not fit in work_mem and wrote temporary data to disk. PostgreSQL sorted chunks in memory, wrote them to temp files, then merged the files — reading and writing the sorted data at least twice. Disk usage for this sort: 18432 kB. An in-memory sort (quicksort) is significantly faster because it avoids all disk I/O.
+}
+
+// ExampleTopNHeapsort demonstrates the TopNHeapsort rule on a query that uses
+// ORDER BY ... LIMIT 10 over a table of 100,000 rows.
+//
+// PostgreSQL chose top-N heapsort: it read all 100,000 rows and kept only the
+// top 10 in a heap. An index on (created_at DESC) would allow an Index Scan to
+// stop after 10 rows, making the query O(LIMIT) instead of O(table size).
+func ExampleTopNHeapsort() {
+	explainJSON := []byte(`[{
+		"Plan": {
+			"Node Type": "Sort",
+			"Parallel Aware": false,
+			"Startup Cost": 0.00,
+			"Total Cost": 2891.34,
+			"Plan Rows": 10,
+			"Plan Width": 72,
+			"Actual Startup Time": 312.451,
+			"Actual Total Time": 312.453,
+			"Actual Rows": 10,
+			"Actual Loops": 1,
+			"Sort Key": ["created_at DESC"],
+			"Sort Method": "top-N heapsort",
+			"Sort Space Used": 25,
+			"Sort Space Type": "Memory",
+			"Plans": [{
+				"Node Type": "Seq Scan",
+				"Parent Relationship": "Outer",
+				"Parallel Aware": false,
+				"Relation Name": "orders",
+				"Alias": "orders",
+				"Startup Cost": 0.00,
+				"Total Cost": 2846.00,
+				"Plan Rows": 100000,
+				"Plan Width": 72,
+				"Actual Startup Time": 0.012,
+				"Actual Total Time": 298.123,
+				"Actual Rows": 100000,
+				"Actual Loops": 1
+			}]
+		},
+		"Planning Time": 0.145,
+		"Execution Time": 312.521
+	}]`)
+
+	plan, err := parser.Parse(explainJSON)
+	if err != nil {
+		panic(err)
+	}
+
+	adv := advisor.New(
+		rules.TopNHeapsort(), // default: flag when child Seq Scan reads >= 1000 rows
+	)
+
+	for _, f := range adv.Analyze(plan) {
+		fmt.Printf("[%s] %s\n", f.Severity, f.Message)
+		fmt.Printf("  detail:     %s\n", f.Detail)
+	}
+
+	// Output:
+	// [INFO] top-N heapsort on "orders" scanned 100000 rows to return 10
+	//   detail:     The query used top-N heapsort to return 10 rows from "orders". This strategy reads every row of the input (100000 rows scanned) and keeps only the top N in a fixed-size heap. It is in-memory and fast, but still performs a full table scan. If a B-tree index exists on (created_at DESC), PostgreSQL could use an Index Scan to read rows in sorted order and stop after the LIMIT — reducing the scan from 100000 rows to just the rows returned.
+}
+
+// ExampleParallelNotLaunched demonstrates the ParallelNotLaunched rule using
+// the parallel_gather.json fixture: Workers Planned=4 but only 2 launched.
+//
+// The planner built the plan assuming 4 parallel workers. At runtime only 2
+// started — likely because max_parallel_workers or max_parallel_workers_per_gather
+// was too low, or other concurrent queries consumed the worker budget.
+func ExampleParallelNotLaunched() {
+	explainJSON, err := os.ReadFile("../testdata/parallel_gather.json")
+	if err != nil {
+		panic(err)
+	}
+
+	plan, err := parser.Parse(explainJSON)
+	if err != nil {
+		panic(err)
+	}
+
+	adv := advisor.New(
+		rules.ParallelNotLaunched(),
+	)
+
+	for _, f := range adv.Analyze(plan) {
+		node, _ := plan.NodeByID(f.NodeID)
+		fmt.Printf("[%s] %s\n", f.Severity, f.Message)
+		fmt.Printf("  node:     %s (ID %d)\n", node.NodeType, node.ID)
+		fmt.Printf("  planned:  %d\n", *node.WorkersPlanned)
+		fmt.Printf("  launched: %d\n", *node.WorkersLaunched)
+	}
+
+	// Output:
+	// [WARN] Gather launched 2 of 4 planned workers
+	//   node:     Gather (ID 1)
+	//   planned:  4
+	//   launched: 2
+}
