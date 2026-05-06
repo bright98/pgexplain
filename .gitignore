@@ -6,6 +6,9 @@
 *.test
 *.out
 
+# Claude Code
+.claude/
+
 # IDE
 .idea/
 .vscode/
