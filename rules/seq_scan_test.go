@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pgexplain/pgexplain/advisor"
-	"github.com/pgexplain/pgexplain/parser"
+	"github.com/Bright98/pgexplain/advisor"
+	"github.com/Bright98/pgexplain/parser"
 )
 
 // helpers to build pointer fields inline in test cases.

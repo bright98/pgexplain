@@ -3,8 +3,8 @@ package rules
 import (
 	"fmt"
 
-	"github.com/pgexplain/pgexplain/advisor"
-	"github.com/pgexplain/pgexplain/parser"
+	"github.com/Bright98/pgexplain/advisor"
+	"github.com/Bright98/pgexplain/parser"
 )
 
 // HashJoinSpill returns a Rule that warns when a Hash Join spills its hash

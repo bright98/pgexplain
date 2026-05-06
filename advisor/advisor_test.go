@@ -3,7 +3,7 @@ package advisor
 import (
 	"testing"
 
-	"github.com/pgexplain/pgexplain/parser"
+	"github.com/Bright98/pgexplain/parser"
 )
 
 // seqScanRule fires a Warn finding on every Seq Scan node.

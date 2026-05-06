@@ -1,7 +1,7 @@
 // Package advisor runs a set of rules over a parsed plan tree and collects findings.
 package advisor
 
-import "github.com/pgexplain/pgexplain/parser"
+import "github.com/Bright98/pgexplain/parser"
 
 // Severity describes how serious a finding is.
 type Severity int
