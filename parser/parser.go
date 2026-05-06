@@ -1,3 +1,14 @@
+// Package parser decodes the JSON produced by PostgreSQL's
+// EXPLAIN (FORMAT JSON) and EXPLAIN (ANALYZE, FORMAT JSON) commands
+// into a typed Go plan tree.
+//
+// The entry point is [Parse], which accepts the raw JSON bytes and returns
+// a [Plan] whose root node is a [Node]. Each Node may have child nodes in
+// its Plans slice, forming the full plan tree.
+//
+// Fields populated only when ANALYZE is used (ActualRows, ActualLoops,
+// HeapFetches, SortSpaceType, etc.) are exposed as pointers so callers can
+// distinguish "absent" from "zero".
 package parser
 
 import (
