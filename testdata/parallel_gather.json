@@ -3,7 +3,7 @@
     "Plan": {
       "Node Type": "Gather",
       "Parallel Aware": false,
-      "Startup Cost": 1000.00,
+      "Startup Cost": 1000.0,
       "Total Cost": 11234.56,
       "Plan Rows": 100000,
       "Plan Width": 72,
@@ -20,8 +20,8 @@
           "Parallel Aware": true,
           "Relation Name": "events",
           "Alias": "events",
-          "Startup Cost": 0.00,
-          "Total Cost": 8681.00,
+          "Startup Cost": 0.0,
+          "Total Cost": 8681.0,
           "Plan Rows": 25000,
           "Plan Width": 72,
           "Actual Startup Time": 0.015,
@@ -32,6 +32,7 @@
       ]
     },
     "Planning Time": 0.892,
-    "Execution Time": 894.123
+    "Execution Time": 894.123,
+    "Query": "SELECT * FROM events;"
   }
 ]
