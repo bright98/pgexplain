@@ -22,14 +22,23 @@ import (
 	"github.com/Bright98/pgexplain/rules"
 )
 
+// version is set at build time via -ldflags "-X main.version=vX.Y.Z".
+var version = "dev"
+
 // valueColumn is the character position where field values start in text output.
 // It equals the width of the widest label prefix: "  suggestion: " = 14.
 const valueColumn = 14
 
 func main() {
 	format := flag.String("format", "text", `Output format: "text" (default) or "json"`)
+	showVersion := flag.Bool("version", false, "Print version and exit")
 	flag.Usage = usage
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Println(version)
+		return
+	}
 
 	data, err := readInput(flag.Args())
 	if err != nil {
