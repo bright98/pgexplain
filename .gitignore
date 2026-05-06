@@ -1,5 +1,5 @@
 # Binaries
-pgexplain
+/pgexplain
 *.exe
 
 # Go build cache and test artifacts
