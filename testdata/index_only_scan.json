@@ -25,6 +25,7 @@
       "Temp Written Blocks": 0
     },
     "Planning Time": 0.198,
-    "Execution Time": 0.041
+    "Execution Time": 0.041,
+    "Query": "SELECT customer_id, created_at FROM orders WHERE customer_id = 42;"
   }
 ]

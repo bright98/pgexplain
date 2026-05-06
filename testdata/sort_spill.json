@@ -11,7 +11,9 @@
       "Actual Total Time": 1203.892,
       "Actual Rows": 100000,
       "Actual Loops": 1,
-      "Sort Key": ["created_at DESC"],
+      "Sort Key": [
+        "created_at DESC"
+      ],
       "Sort Method": "external merge",
       "Sort Space Used": 18432,
       "Sort Space Type": "Disk",
@@ -22,8 +24,8 @@
           "Parallel Aware": false,
           "Relation Name": "events",
           "Alias": "events",
-          "Startup Cost": 0.00,
-          "Total Cost": 8681.00,
+          "Startup Cost": 0.0,
+          "Total Cost": 8681.0,
           "Plan Rows": 100000,
           "Plan Width": 72,
           "Actual Startup Time": 0.012,
@@ -34,6 +36,7 @@
       ]
     },
     "Planning Time": 0.145,
-    "Execution Time": 1204.123
+    "Execution Time": 1204.123,
+    "Query": "SELECT * FROM events ORDER BY created_at DESC;"
   }
 ]
