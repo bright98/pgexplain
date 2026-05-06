@@ -1,0 +1,44 @@
+[
+  {
+    "Query": "SELECT * FROM events WHERE created_at > now() - interval '30 days' AND type = 'purchase';",
+    "Plan": {
+      "Node Type": "Bitmap Heap Scan",
+      "Parallel Aware": false,
+      "Relation Name": "events",
+      "Alias": "events",
+      "Startup Cost": 4821.34,
+      "Total Cost": 38291.20,
+      "Plan Rows": 12000,
+      "Plan Width": 128,
+      "Actual Startup Time": 89.341,
+      "Actual Total Time": 3821.203,
+      "Actual Rows": 11892,
+      "Actual Loops": 1,
+      "Recheck Cond": "(created_at > (now() - '30 days'::interval))",
+      "Rows Removed by Recheck": 488108,
+      "Filter": "(type = 'purchase')",
+      "Rows Removed by Filter": 321,
+      "Shared Hit Blocks": 2841,
+      "Shared Read Blocks": 22419,
+      "Plans": [
+        {
+          "Node Type": "Bitmap Index Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Index Name": "events_created_at_idx",
+          "Startup Cost": 0.00,
+          "Total Cost": 4821.34,
+          "Plan Rows": 500000,
+          "Plan Width": 0,
+          "Actual Startup Time": 88.203,
+          "Actual Total Time": 88.203,
+          "Actual Rows": 500000,
+          "Actual Loops": 1,
+          "Index Cond": "(created_at > (now() - '30 days'::interval))"
+        }
+      ]
+    },
+    "Planning Time": 0.412,
+    "Execution Time": 3822.841
+  }
+]

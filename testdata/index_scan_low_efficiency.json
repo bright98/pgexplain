@@ -1,0 +1,30 @@
+[
+  {
+    "Query": "EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) SELECT * FROM orders WHERE status = 'pending';",
+    "Plan": {
+      "Node Type": "Index Scan",
+      "Parallel Aware": false,
+      "Scan Direction": "Forward",
+      "Index Name": "orders_status_idx",
+      "Relation Name": "orders",
+      "Alias": "orders",
+      "Startup Cost": 0.56,
+      "Total Cost": 89234.12,
+      "Plan Rows": 50000,
+      "Plan Width": 72,
+      "Actual Startup Time": 0.041,
+      "Actual Total Time": 4821.203,
+      "Actual Rows": 50000,
+      "Actual Loops": 1,
+      "Index Cond": "(status = 'pending')",
+      "Shared Hit Blocks": 8200,
+      "Shared Read Blocks": 41800,
+      "Shared Dirtied Blocks": 0,
+      "Shared Written Blocks": 0,
+      "Temp Read Blocks": 0,
+      "Temp Written Blocks": 0
+    },
+    "Planning Time": 0.312,
+    "Execution Time": 4824.891
+  }
+]

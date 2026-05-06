@@ -1,0 +1,74 @@
+[
+  {
+    "Query": "WITH active_orders AS MATERIALIZED (SELECT * FROM orders WHERE status != 'cancelled') SELECT u.name, ao.total FROM users u JOIN active_orders ao ON ao.user_id = u.id WHERE u.region = 'EU';",
+    "Plan": {
+      "Node Type": "Nested Loop",
+      "Parallel Aware": false,
+      "Startup Cost": 18234.50,
+      "Total Cost": 892341.20,
+      "Plan Rows": 24000,
+      "Plan Width": 48,
+      "Actual Startup Time": 312.841,
+      "Actual Total Time": 28934.203,
+      "Actual Rows": 23841,
+      "Actual Loops": 1,
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Relation Name": "users",
+          "Alias": "u",
+          "Startup Cost": 0.00,
+          "Total Cost": 2341.00,
+          "Plan Rows": 12000,
+          "Plan Width": 24,
+          "Actual Startup Time": 0.012,
+          "Actual Total Time": 18.234,
+          "Actual Rows": 12000,
+          "Actual Loops": 1,
+          "Filter": "(region = 'EU')",
+          "Rows Removed by Filter": 38000
+        },
+        {
+          "Node Type": "CTE Scan",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "CTE Name": "active_orders",
+          "Alias": "ao",
+          "Startup Cost": 0.00,
+          "Total Cost": 72.50,
+          "Plan Rows": 2,
+          "Plan Width": 32,
+          "Actual Startup Time": 0.021,
+          "Actual Total Time": 2.389,
+          "Actual Rows": 2,
+          "Actual Loops": 12000,
+          "Filter": "(user_id = u.id)",
+          "Rows Removed by Filter": 88298
+        }
+      ],
+      "CTEs": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "InitPlan",
+          "Parallel Aware": false,
+          "Relation Name": "orders",
+          "Alias": "orders",
+          "Startup Cost": 0.00,
+          "Total Cost": 18234.50,
+          "Plan Rows": 90300,
+          "Plan Width": 32,
+          "Actual Startup Time": 312.803,
+          "Actual Total Time": 312.803,
+          "Actual Rows": 90300,
+          "Actual Loops": 1,
+          "Filter": "(status <> 'cancelled')",
+          "Rows Removed by Filter": 9700
+        }
+      ]
+    },
+    "Planning Time": 1.102,
+    "Execution Time": 28941.203
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "Query": "SELECT user_id, sum(amount) FROM transactions GROUP BY user_id ORDER BY sum(amount) DESC;",
+    "Plan": {
+      "Node Type": "Sort",
+      "Parallel Aware": false,
+      "Sort Key": ["(sum(amount)) DESC"],
+      "Sort Method": "external merge",
+      "Sort Space Used": 65536,
+      "Sort Space Type": "Disk",
+      "Startup Cost": 182034.55,
+      "Total Cost": 184534.55,
+      "Plan Rows": 100000,
+      "Plan Width": 16,
+      "Actual Startup Time": 4821.341,
+      "Actual Total Time": 5103.892,
+      "Actual Rows": 100000,
+      "Actual Loops": 1,
+      "Shared Hit Blocks": 12480,
+      "Shared Read Blocks": 3120,
+      "Temp Read Blocks": 18200,
+      "Temp Written Blocks": 18200,
+      "Plans": [
+        {
+          "Node Type": "HashAggregate",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Group Key": ["user_id"],
+          "Startup Cost": 89234.00,
+          "Total Cost": 91734.00,
+          "Plan Rows": 100000,
+          "Plan Width": 16,
+          "Actual Startup Time": 3201.341,
+          "Actual Total Time": 3892.103,
+          "Actual Rows": 100000,
+          "Actual Loops": 1,
+          "Shared Hit Blocks": 12480,
+          "Shared Read Blocks": 3120,
+          "Temp Read Blocks": 9800,
+          "Temp Written Blocks": 9800,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Relation Name": "transactions",
+              "Alias": "transactions",
+              "Startup Cost": 0.00,
+              "Total Cost": 68234.00,
+              "Plan Rows": 5000000,
+              "Plan Width": 12,
+              "Actual Startup Time": 0.021,
+              "Actual Total Time": 1203.892,
+              "Actual Rows": 5000000,
+              "Actual Loops": 1,
+              "Shared Hit Blocks": 12480,
+              "Shared Read Blocks": 3120,
+              "Temp Read Blocks": 0,
+              "Temp Written Blocks": 0
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.892,
+    "Execution Time": 5108.341
+  }
+]
