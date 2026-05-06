@@ -191,6 +191,20 @@ Pass it to `advisor.New()` alongside the built-in rules. Your rule is called onc
 
 ---
 
+## Roadmap
+
+The following rules are planned for the next release:
+
+| Rule | Detects |
+|---|---|
+| `MergeJoinUnsortedInputs` | Merge Join has explicit Sort children — an index on the join key would eliminate the sort overhead |
+| `HighTempBlockIO` | Any node with high temporary block I/O (`TempReadBlocks` / `TempWrittenBlocks`) — catches disk spills beyond sort and hash join |
+| `BitmapHeapRecheckOverhead` | Bitmap Heap Scan switched to lossy mode — bitmap exceeded `work_mem`, forcing a row-level recheck on every matched page |
+| `CTEScanMaterialized` | CTE Scan over a large materialized result, especially when the same CTE is scanned multiple times inside a join |
+| `IndexScanLowEfficiency` | Index Scan reads many blocks per row returned — signals heap fragmentation, dead tuples, or low index selectivity |
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to run tests, add a new rule, and the conventions the codebase follows.
