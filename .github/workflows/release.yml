@@ -9,8 +9,20 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    name: Build and publish
+  create-release:
+    name: Create release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+
+  build:
+    name: Build and upload (${{ matrix.goos }}, ${{ matrix.goarch }})
+    needs: create-release
     runs-on: ubuntu-latest
 
     strategy:
@@ -33,7 +45,6 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.21'
-          cache: true
 
       - name: Build binary
         env:
@@ -52,4 +63,3 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.ASSET }}
-          generate_release_notes: true
