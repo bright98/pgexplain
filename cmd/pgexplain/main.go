@@ -65,8 +65,14 @@ func main() {
 }
 
 // readInput returns the raw EXPLAIN JSON from stdin or the first file argument.
+// If no argument is given and stdin is an interactive terminal, it prints usage
+// and exits so the user is not left with a silently hanging process.
 func readInput(args []string) ([]byte, error) {
 	if len(args) == 0 {
+		if stdinIsTTY() {
+			usage()
+			os.Exit(2)
+		}
 		return io.ReadAll(os.Stdin)
 	}
 	f, err := os.Open(args[0])
@@ -75,6 +81,16 @@ func readInput(args []string) ([]byte, error) {
 	}
 	defer f.Close()
 	return io.ReadAll(f)
+}
+
+// stdinIsTTY reports whether stdin is connected to an interactive terminal
+// rather than a pipe or file redirect.
+func stdinIsTTY() bool {
+	stat, err := os.Stdin.Stat()
+	if err != nil {
+		return false
+	}
+	return (stat.Mode() & os.ModeCharDevice) != 0
 }
 
 // buildAdvisor creates an Advisor with all built-in rules at their defaults.
