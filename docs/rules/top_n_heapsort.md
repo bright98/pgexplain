@@ -91,9 +91,9 @@ The child must be a **Seq Scan** specifically. If the child is already an Index 
 
 ```go
 import (
-    "github.com/pgexplain/pgexplain/advisor"
-    "github.com/pgexplain/pgexplain/parser"
-    "github.com/pgexplain/pgexplain/rules"
+    "github.com/Bright98/pgexplain/advisor"
+    "github.com/Bright98/pgexplain/parser"
+    "github.com/Bright98/pgexplain/rules"
 )
 
 plan, _ := parser.Parse(explainJSON)

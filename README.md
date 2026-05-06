@@ -43,7 +43,7 @@ It has two responsibilities:
 ### Install
 
 ```bash
-go install github.com/pgexplain/pgexplain/cmd/pgexplain@latest
+go install github.com/Bright98/pgexplain/cmd/pgexplain@latest
 ```
 
 Requires Go 1.21+.
@@ -84,7 +84,7 @@ pgexplain plan.json || exit 1
 ### Install
 
 ```bash
-go get github.com/pgexplain/pgexplain
+go get github.com/Bright98/pgexplain
 ```
 
 ### Quick start
@@ -95,9 +95,9 @@ package main
 import (
     "fmt"
 
-    "github.com/pgexplain/pgexplain/advisor"
-    "github.com/pgexplain/pgexplain/parser"
-    "github.com/pgexplain/pgexplain/rules"
+    "github.com/Bright98/pgexplain/advisor"
+    "github.com/Bright98/pgexplain/parser"
+    "github.com/Bright98/pgexplain/rules"
 )
 
 func main() {
