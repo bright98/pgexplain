@@ -1,7 +1,7 @@
 # pgexplain
 
 <p align="center">
-  <img src="docs/pgexplain.png" alt="pgexplain" width="320">
+  <img src="https://raw.githubusercontent.com/Bright98/pgexplain/master/docs/pgexplain.png" alt="pgexplain" width="320">
 </p>
 
 A Go library and CLI that parse PostgreSQL `EXPLAIN (ANALYZE, FORMAT JSON)` output and surface actionable performance findings.
