@@ -21,6 +21,26 @@ $ pgexplain plan.json
 
 ---
 
+## Table of Contents
+
+- [What is pgexplain?](#what-is-pgexplain)
+- [Who is it for?](#who-is-it-for)
+- [CLI](#cli)
+  - [Install](#install)
+  - [Usage](#usage)
+  - [Exit codes](#exit-codes)
+- [Library](#library)
+  - [Install](#install-1)
+  - [Quick start](#quick-start)
+  - [API reference](#api-reference)
+- [How it works](#how-it-works)
+- [Supported rules](#supported-rules)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
 ## What is pgexplain?
 
 PostgreSQL's query planner produces a detailed execution plan for every query. Reading and interpreting that plan — especially under pressure, at scale, or in automated pipelines — is hard. `pgexplain` does it programmatically.
