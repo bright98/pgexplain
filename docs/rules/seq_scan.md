@@ -75,9 +75,9 @@ If `Rows Removed by Filter` is absent in the plan, this is a full table read wit
 
 ```go
 import (
-    "github.com/Bright98/pgexplain/advisor"
-    "github.com/Bright98/pgexplain/parser"
-    "github.com/Bright98/pgexplain/rules"
+    "github.com/bright98/pgexplain/advisor"
+    "github.com/bright98/pgexplain/parser"
+    "github.com/bright98/pgexplain/rules"
 )
 
 plan, _ := parser.Parse(explainJSON)

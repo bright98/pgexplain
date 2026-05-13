@@ -118,9 +118,9 @@ The factor formula is **symmetric** — underestimating by 10× and overestimati
 
 ```go
 import (
-    "github.com/Bright98/pgexplain/advisor"
-    "github.com/Bright98/pgexplain/parser"
-    "github.com/Bright98/pgexplain/rules"
+    "github.com/bright98/pgexplain/advisor"
+    "github.com/bright98/pgexplain/parser"
+    "github.com/bright98/pgexplain/rules"
 )
 
 plan, _ := parser.Parse(explainJSON)

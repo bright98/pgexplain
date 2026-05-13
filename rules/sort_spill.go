@@ -3,8 +3,8 @@ package rules
 import (
 	"fmt"
 
-	"github.com/Bright98/pgexplain/advisor"
-	"github.com/Bright98/pgexplain/parser"
+	"github.com/bright98/pgexplain/advisor"
+	"github.com/bright98/pgexplain/parser"
 )
 
 // SortSpill returns a Rule that warns when a Sort node spills to disk.

@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Bright98/pgexplain/parser"
-	"github.com/Bright98/pgexplain/rules"
+	"github.com/bright98/pgexplain/parser"
+	"github.com/bright98/pgexplain/rules"
 )
 
 func pf64(v float64) *float64 { return &v }

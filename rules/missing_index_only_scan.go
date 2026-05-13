@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/Bright98/pgexplain/advisor"
-	"github.com/Bright98/pgexplain/parser"
+	"github.com/bright98/pgexplain/advisor"
+	"github.com/bright98/pgexplain/parser"
 )
 
 const defaultMinHeapFetchRatio = 0.1

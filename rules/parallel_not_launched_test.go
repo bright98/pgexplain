@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Bright98/pgexplain/parser"
-	"github.com/Bright98/pgexplain/rules"
+	"github.com/bright98/pgexplain/parser"
+	"github.com/bright98/pgexplain/rules"
 )
 
 func TestParallelNotLaunched(t *testing.T) {

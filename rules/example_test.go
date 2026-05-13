@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Bright98/pgexplain/advisor"
-	"github.com/Bright98/pgexplain/parser"
-	"github.com/Bright98/pgexplain/rules"
+	"github.com/bright98/pgexplain/advisor"
+	"github.com/bright98/pgexplain/parser"
+	"github.com/bright98/pgexplain/rules"
 )
 
 // ExampleSeqScan demonstrates end-to-end usage of the SeqScan rule.

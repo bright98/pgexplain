@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Bright98/pgexplain/advisor"
-	"github.com/Bright98/pgexplain/parser"
+	"github.com/bright98/pgexplain/advisor"
+	"github.com/bright98/pgexplain/parser"
 )
 
 func TestHashJoinSpill_Check(t *testing.T) {
