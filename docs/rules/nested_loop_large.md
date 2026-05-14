@@ -230,3 +230,4 @@ When you see a Nested Loop with a large `Actual Loops` count, especially with a 
 
 - **[RowEstimateMismatch](row_estimate_mismatch.md)** — if the planner underestimated the outer row count, it may have incorrectly preferred Nested Loop. This rule fires on the join node; RowEstimateMismatch fires on the outer child where the estimate diverged.
 - **[HashJoinSpill](hash_join_spill.md)** — if the alternative to Nested Loop is a Hash Join that spills to disk, switching join strategies may not help without also raising `work_mem`.
+- **[MergeJoinUnsortedInputs](merge_join_unsorted_inputs.md)** — the third join strategy. Missing indexes on join columns affect all three strategies: Nested Loop (no index → full inner scan), Merge Join (no index → explicit Sort), Hash Join (no index → potential spill). Checking all three rules together gives a complete picture of indexing gaps.

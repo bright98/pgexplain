@@ -208,6 +208,7 @@ Pass it to `advisor.New()` alongside the built-in rules. Your rule is called onc
 | SortSpill | `rules.SortSpill()` | Sort node exceeded `work_mem` and wrote temporary data to disk | [docs](docs/rules/sort_spill.md) |
 | TopNHeapsort | `rules.TopNHeapsort()` | top-N heapsort reads the full table when an index on the sort key could stop early | [docs](docs/rules/top_n_heapsort.md) |
 | ParallelNotLaunched | `rules.ParallelNotLaunched()` | Gather node launched fewer workers than planned — parallelism was constrained at runtime | [docs](docs/rules/parallel_not_launched.md) |
+| MergeJoinUnsortedInputs | `rules.MergeJoinUnsortedInputs()` | Merge Join has explicit Sort children — an index on the join key would eliminate the sort overhead | [docs](docs/rules/merge_join_unsorted_inputs.md) |
 
 ---
 
@@ -217,7 +218,6 @@ The following rules are planned for the next release:
 
 | Rule | Detects |
 |---|---|
-| `MergeJoinUnsortedInputs` | Merge Join has explicit Sort children — an index on the join key would eliminate the sort overhead |
 | `HighTempBlockIO` | Any node with high temporary block I/O (`TempReadBlocks` / `TempWrittenBlocks`) — catches disk spills beyond sort and hash join |
 | `BitmapHeapRecheckOverhead` | Bitmap Heap Scan switched to lossy mode — bitmap exceeded `work_mem`, forcing a row-level recheck on every matched page |
 | `CTEScanMaterialized` | CTE Scan over a large materialized result, especially when the same CTE is scanned multiple times inside a join |

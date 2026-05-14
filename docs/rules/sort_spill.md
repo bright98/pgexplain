@@ -207,6 +207,7 @@ CREATE INDEX ON orders (created_at DESC) WHERE status = 'pending';
 
 ## Related rules
 
+- **[MergeJoinUnsortedInputs](merge_join_unsorted_inputs.md)** — when a Sort node is a direct child of a Merge Join, both rules fire together. Adding an index on the join key eliminates the Sort node entirely — a better fix than raising `work_mem`, because it removes the sort rather than just making it cheaper.
 - **[HashJoinSpill](hash_join_spill.md)** — Hash Join spills follow the same root cause (work_mem too small) and the same fix (raise work_mem or reduce the data size). If both fire on the same query, the required work_mem is the sum, not the max.
 - **[RowEstimateMismatch](row_estimate_mismatch.md)** — if the planner underestimated the number of rows entering the Sort, it may have allocated too little work_mem from the start, making a spill more likely even with a reasonable global setting.
 - **[TopNHeapsort](top_n_heapsort.md)** — the other sort-related rule. Fires when top-N heapsort reads the full table to serve a small LIMIT, and an index on the sort key could eliminate the full scan entirely.

@@ -571,6 +571,92 @@ func ExampleTopNHeapsort() {
 	//   detail:     The query used top-N heapsort to return 10 rows from "orders". This strategy reads every row of the input (100000 rows scanned) and keeps only the top N in a fixed-size heap. It is in-memory and fast, but still performs a full table scan. If a B-tree index exists on (created_at DESC), PostgreSQL could use an Index Scan to read rows in sorted order and stop after the LIMIT — reducing the scan from 100000 rows to just the rows returned.
 }
 
+// ExampleMergeJoinUnsortedInputs demonstrates the MergeJoinUnsortedInputs rule
+// on a plan where neither join column has an index, forcing PostgreSQL to sort
+// both sides explicitly before the merge.
+//
+// The plan represents a query like:
+//
+//	SELECT o.id, o.total, c.name
+//	FROM orders o JOIN customers c ON o.customer_id = c.id
+//
+// The outer side (orders) sorted 48,000 rows and spilled to disk; the inner
+// side (customers) sorted 25,000 rows in memory. Both sorts would be eliminated
+// by adding indexes on the join columns.
+func ExampleMergeJoinUnsortedInputs() {
+	explainJSON := []byte(`[{
+		"Plan": {
+			"Node Type": "Merge Join",
+			"Parallel Aware": false,
+			"Merge Cond": "(o.customer_id = c.id)",
+			"Startup Cost": 28500.44,
+			"Total Cost": 41200.21,
+			"Plan Rows": 48000,
+			"Plan Width": 88,
+			"Actual Startup Time": 312.841,
+			"Actual Total Time": 489.203,
+			"Actual Rows": 48312,
+			"Actual Loops": 1,
+			"Plans": [
+				{
+					"Node Type": "Sort",
+					"Parent Relationship": "Outer",
+					"Parallel Aware": false,
+					"Sort Key": ["o.customer_id"],
+					"Sort Method": "external merge",
+					"Sort Space Used": 14336,
+					"Sort Space Type": "Disk",
+					"Startup Cost": 18200.33,
+					"Total Cost": 18320.33,
+					"Plan Rows": 48000,
+					"Plan Width": 56,
+					"Actual Startup Time": 198.421,
+					"Actual Total Time": 231.882,
+					"Actual Rows": 48312,
+					"Actual Loops": 1
+				},
+				{
+					"Node Type": "Sort",
+					"Parent Relationship": "Inner",
+					"Parallel Aware": false,
+					"Sort Key": ["c.id"],
+					"Sort Method": "quicksort",
+					"Sort Space Used": 892,
+					"Sort Space Type": "Memory",
+					"Startup Cost": 10300.11,
+					"Total Cost": 10362.61,
+					"Plan Rows": 25000,
+					"Plan Width": 36,
+					"Actual Startup Time": 112.341,
+					"Actual Total Time": 114.892,
+					"Actual Rows": 25000,
+					"Actual Loops": 1
+				}
+			]
+		},
+		"Planning Time": 1.203,
+		"Execution Time": 492.841
+	}]`)
+
+	plan, err := parser.Parse(explainJSON)
+	if err != nil {
+		panic(err)
+	}
+
+	adv := advisor.New(
+		rules.MergeJoinUnsortedInputs(),
+	)
+
+	for _, f := range adv.Analyze(plan) {
+		fmt.Printf("[%s] %s\n", f.Severity, f.Message)
+		fmt.Printf("  detail: %s\n", f.Detail)
+	}
+
+	// Output:
+	// [WARN] merge join sorted both inputs: outer on (o.customer_id), inner on (c.id)
+	//   detail: Merge Join requires both inputs to arrive pre-sorted on the join key. Without an index scan that produces rows in sorted order, PostgreSQL inserts explicit Sort nodes for each unsorted input, adding O(N log N) work before the join can begin. Outer side: 48000 estimated rows sorted on (o.customer_id) (14336 kB, spilled to disk). Inner side: 25000 estimated rows sorted on (c.id).
+}
+
 // ExampleParallelNotLaunched demonstrates the ParallelNotLaunched rule using
 // the parallel_gather.json fixture: Workers Planned=4 but only 2 launched.
 //

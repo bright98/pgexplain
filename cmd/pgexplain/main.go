@@ -129,6 +129,7 @@ func buildAdvisor() *advisor.Advisor {
 		rules.SortSpill(),
 		rules.TopNHeapsort(),
 		rules.ParallelNotLaunched(),
+		rules.MergeJoinUnsortedInputs(),
 	)
 }
 
