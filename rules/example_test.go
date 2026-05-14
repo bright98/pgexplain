@@ -571,6 +571,59 @@ func ExampleTopNHeapsort() {
 	//   detail:     The query used top-N heapsort to return 10 rows from "orders". This strategy reads every row of the input (100000 rows scanned) and keeps only the top N in a fixed-size heap. It is in-memory and fast, but still performs a full table scan. If a B-tree index exists on (created_at DESC), PostgreSQL could use an Index Scan to read rows in sorted order and stop after the LIMIT — reducing the scan from 100000 rows to just the rows returned.
 }
 
+// ExampleHighTempBlockIO demonstrates the HighTempBlockIO rule on a plan where
+// a HashAggregate node (GROUP BY) spills intermediate data to disk because its
+// working set exceeds work_mem.
+//
+// The plan represents a query like:
+//
+//	SELECT user_id, sum(amount) FROM transactions GROUP BY user_id
+//
+// The aggregation accumulates one entry per distinct user_id. With 100,000
+// distinct users and limited work_mem, PostgreSQL writes 9,800 temp blocks
+// (≈ 77MB) to disk and reads them back during the final merge.
+func ExampleHighTempBlockIO() {
+	explainJSON := []byte(`[{
+		"Plan": {
+			"Node Type": "HashAggregate",
+			"Parallel Aware": false,
+			"Group Key": ["user_id"],
+			"Startup Cost": 89234.00,
+			"Total Cost": 91734.00,
+			"Plan Rows": 100000,
+			"Plan Width": 16,
+			"Actual Startup Time": 3201.341,
+			"Actual Total Time": 3892.103,
+			"Actual Rows": 100000,
+			"Actual Loops": 1,
+			"Shared Hit Blocks": 12480,
+			"Shared Read Blocks": 3120,
+			"Temp Read Blocks": 9800,
+			"Temp Written Blocks": 9800
+		},
+		"Planning Time": 0.892,
+		"Execution Time": 3895.221
+	}]`)
+
+	plan, err := parser.Parse(explainJSON)
+	if err != nil {
+		panic(err)
+	}
+
+	adv := advisor.New(
+		rules.HighTempBlockIO(), // default: fire when temp blocks >= 256 (≈ 2MB)
+	)
+
+	for _, f := range adv.Analyze(plan) {
+		fmt.Printf("[%s] %s\n", f.Severity, f.Message)
+		fmt.Printf("  detail: %s\n", f.Detail)
+	}
+
+	// Output:
+	// [WARN] HashAggregate spilled to disk using 9800 temp blocks (≈ 77MB)
+	//   detail: This HashAggregate node wrote intermediate results to temporary disk files because its working set exceeded work_mem. Each block written to disk must be read back before the node completes, adding sequential I/O that in-memory execution avoids. Temp blocks written: 9800, read: 9800 (≈ 77MB).
+}
+
 // ExampleMergeJoinUnsortedInputs demonstrates the MergeJoinUnsortedInputs rule
 // on a plan where neither join column has an index, forcing PostgreSQL to sort
 // both sides explicitly before the merge.

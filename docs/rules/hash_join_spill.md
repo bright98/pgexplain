@@ -188,3 +188,4 @@ Sometimes the spill is caused by an unnecessarily large inner side. Consider whe
 - **[NestedLoopLarge](nested_loop_large.md)** — if the planner chose a Hash Join because it estimated a large inner set, but the estimate was wrong, a Nested Loop might have been a better choice. Or vice versa.
 - **[SortSpill](sort_spill.md)** — Sort spills have the same root cause as Hash Join spills: `work_mem` too small. If both fire on the same query, the required `work_mem` is the sum of the two, not the max.
 - **[ParallelNotLaunched](parallel_not_launched.md)** — if a parallel hash join spills, check whether the intended workers launched. Fewer workers means each worker's hash table is larger and more likely to exceed `work_mem`.
+- **[HighTempBlockIO](high_temp_block_io.md)** — the broader sibling rule. Fires on any non-Sort, non-Hash node with high temp block I/O. If both fire on the same query, multiple operations are competing for `work_mem` simultaneously.
