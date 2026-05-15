@@ -300,7 +300,7 @@ func ExampleHashJoinSpill() {
 	}
 
 	// Output:
-	// [WARN] hash join spilled to disk across 4 batches (peak memory: 4096kB per batch)
+	// [ERROR] hash join spilled to disk across 4 batches (peak memory: 4096kB per batch)
 	//   node ID:  3 (Hash)
 	//   batches:  4
 	//   peak mem: 4096kB
@@ -505,7 +505,7 @@ func ExampleSortSpill() {
 	}
 
 	// Output:
-	// [WARN] sort spilled to disk using external merge (18432 kB)
+	// [ERROR] sort spilled to disk using external merge (18432 kB)
 	//   detail:     The sort could not fit in work_mem and wrote temporary data to disk. PostgreSQL sorted chunks in memory, wrote them to temp files, then merged the files — reading and writing the sorted data at least twice. Disk usage for this sort: 18432 kB. An in-memory sort (quicksort) is significantly faster because it avoids all disk I/O.
 }
 
@@ -620,7 +620,7 @@ func ExampleHighTempBlockIO() {
 	}
 
 	// Output:
-	// [WARN] HashAggregate spilled to disk using 9800 temp blocks (≈ 77MB)
+	// [ERROR] HashAggregate spilled to disk using 9800 temp blocks (≈ 77MB)
 	//   detail: This HashAggregate node wrote intermediate results to temporary disk files because its working set exceeded work_mem. Each block written to disk must be read back before the node completes, adding sequential I/O that in-memory execution avoids. Temp blocks written: 9800, read: 9800 (≈ 77MB).
 }
 

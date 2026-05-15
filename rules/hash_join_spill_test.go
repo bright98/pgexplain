@@ -112,8 +112,8 @@ func TestHashJoinSpill_Check(t *testing.T) {
 			}
 
 			f := findings[0]
-			if f.Severity != advisor.Warn {
-				t.Errorf("Severity = %v, want Warn", f.Severity)
+			if f.Severity != advisor.Error {
+				t.Errorf("Severity = %v, want Error", f.Severity)
 			}
 			if f.NodeID != tt.node.ID {
 				t.Errorf("NodeID = %d, want %d", f.NodeID, tt.node.ID)

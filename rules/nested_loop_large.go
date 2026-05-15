@@ -120,7 +120,7 @@ func (r *nestedLoopRule) Check(node parser.Node) []advisor.Finding {
 	}
 
 	detail := buildNestedLoopDetail(inner, loops, isSeqScan)
-	suggestion := buildNestedLoopSuggestion(inner, loops, isSeqScan)
+	suggestion := buildNestedLoopSuggestion(node, inner, loops, isSeqScan)
 
 	return []advisor.Finding{{
 		Severity:   severity,
@@ -185,17 +185,16 @@ func buildNestedLoopDetail(inner *parser.Node, loops int, isSeqScan bool) string
 	return base
 }
 
-func buildNestedLoopSuggestion(inner *parser.Node, loops int, isSeqScan bool) string {
+func buildNestedLoopSuggestion(loop parser.Node, inner *parser.Node, loops int, isSeqScan bool) string {
 	if isSeqScan {
 		relation := "the inner table"
 		if inner.RelationName != nil {
 			relation = fmt.Sprintf("%q", *inner.RelationName)
 		}
 		cond := ""
-		if inner.IndexCond != nil {
-			cond = fmt.Sprintf(" to support the join condition %s", *inner.IndexCond)
-		} else if inner.JoinFilter != nil {
-			cond = fmt.Sprintf(" to support the join filter %s", *inner.JoinFilter)
+		// The join condition lives on the Nested Loop node, not on the inner Seq Scan.
+		if loop.JoinFilter != nil {
+			cond = fmt.Sprintf(" to support the join filter %s", *loop.JoinFilter)
 		}
 		return fmt.Sprintf(
 			"Add an index on %s%s. Without an index on the join key, each of the %d"+

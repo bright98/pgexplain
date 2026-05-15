@@ -67,7 +67,7 @@ func (r *sortSpillRule) Check(node parser.Node) []advisor.Finding {
 	suggestion := buildSortSpillSuggestion(node)
 
 	return []advisor.Finding{{
-		Severity:   advisor.Warn,
+		Severity:   advisor.Error,
 		NodeID:     node.ID,
 		NodeType:   node.NodeType,
 		Message:    message,

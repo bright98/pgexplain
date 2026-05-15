@@ -88,7 +88,7 @@ func (hashJoinSpillRule) Check(node parser.Node) []advisor.Finding {
 	suggestion := buildWorkMemSuggestion(batches, node.PeakMemoryUsage)
 
 	return []advisor.Finding{{
-		Severity:   advisor.Warn,
+		Severity:   advisor.Error,
 		NodeID:     node.ID,
 		NodeType:   node.NodeType,
 		Message:    message,

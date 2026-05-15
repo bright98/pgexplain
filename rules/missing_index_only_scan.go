@@ -91,8 +91,9 @@ func (r *indexOnlyScanRule) Check(node parser.Node) []advisor.Finding {
 	trueActualRows := *node.ActualRows * *node.ActualLoops
 	heapFetches := float64(*node.HeapFetches)
 
-	// When zero rows were returned the ratio is undefined; skip to avoid noise.
-	if trueActualRows == 0 && heapFetches == 0 {
+	// When zero rows were returned the ratio is undefined (denominator = 0).
+	// Skip rather than fabricate a percentage that would exceed 100%.
+	if trueActualRows == 0 {
 		return nil
 	}
 

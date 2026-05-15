@@ -100,7 +100,7 @@ func (r *highTempBlockIORule) Check(node parser.Node) []advisor.Finding {
 	}
 
 	return []advisor.Finding{{
-		Severity:   advisor.Warn,
+		Severity:   advisor.Error,
 		NodeID:     node.ID,
 		NodeType:   node.NodeType,
 		Message:    buildHighTempBlockIOMessage(node.NodeType, maxBlocks),
